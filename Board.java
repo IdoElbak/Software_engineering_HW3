@@ -29,50 +29,50 @@ public class Board {
         this.cellBoard = new Cell[rows][cols];
 
         //Randomly generates the board's cells.
-        Random rand = new Random(seed);
+        Random rnd = new Random(seed);
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-                int randValue = rand.nextInt(range);
+                int randValue = rnd.nextInt(range);
                 Cell cellNew;
-                if(randValue % 2 == 0)
+                if(randValue % 2 == 0) {
                     cellNew = new DyingCell(true);
-                else
+                }else {
                     cellNew = new NonDyingCell(false);
-
+                }
                 cellBoard[row][col] = cellNew;
             }
         }
 
     }
 
-    public Board(Cell[][] cellBoard){
-        this.rows = cellBoard.length;
-        this.cols = cellBoard[0].length;
+    public Board(Board board){
+        this.rows = board.cellBoard.length;
+        this.cols = board.cellBoard[0].length;
         this.cellBoard = new Cell[rows][cols];
 
         for(int row = 0; row < rows; row++){
             for(int col = 0; col < cols; col++){
-                if(cellBoard[row][col] instanceof DyingCell){
+                if(board.cellBoard[row][col] instanceof DyingCell){
                     /*
                     cellBoard in spot row,col will be a new DyingCell because it is instance of it
                     getCellType will return 2 if the cell is Dying(stateBad = 0) and 3 if it's dead(stateBad = 1).
                     so if the returned value == 3 it means stateBad should equal true. else it should equal false
                      */
-                    this.cellBoard[row][col] = new DyingCell(cellBoard[row][col].getCellType() == 3);
-                }else if(cellBoard[row][col] instanceof NonDyingCell){
+                    this.cellBoard[row][col] = new DyingCell(board.cellBoard[row][col].getCellType() == 3);
+                }else if(board.cellBoard[row][col] instanceof NonDyingCell){
                     /*
                     cellBoard in spot row,col will be a new NonDyingCell because it is instance of it
                     getCellType will return 0 if the cell is Healthy(stateBad = 0) and 1 if it's sick(stateBad = 1).
                     so if the returned value == 1 it means stateBad should equal true. else it should equal false
                      */
-                    this.cellBoard[row][col] = new NonDyingCell(cellBoard[row][col].getCellType() == 1);
+                    this.cellBoard[row][col] = new NonDyingCell(board.cellBoard[row][col].getCellType() == 1);
                 }
             }
         }
     }
 
     public void nextGeneration(){
-        Board tempBoard = new Board(this.cellBoard);
+        Board tempBoard = new Board(this);
         for(int row = 0; row < rows; row++){
             for(int col = 0; col < cols; col++){
 
@@ -82,7 +82,6 @@ public class Board {
             }
         }
         this.cellBoard = tempBoard.cellBoard;
-
     }
 
     /**
@@ -113,7 +112,6 @@ public class Board {
 
         //Stores the number of healthy cells.
         byte healthyCells = 0;
-
         //Stores the number of dead cells.
         byte sickCells = 0;
 
@@ -152,15 +150,16 @@ public class Board {
                 healthyCells++;
 
             else if(cellBoard[row][col - 1].isSick())
+                sickCells++;
 
             //Check 5:
             if(row < rows - 1){
                 if(cellBoard[row + 1][col - 1].isHealthy())
                     healthyCells++;
-            }
 
-            else if(cellBoard[row + 1][col - 1].isSick())
-                sickCells++;
+                else if(cellBoard[row + 1][col - 1].isSick())
+                    sickCells++;
+            }
 
         }
 
@@ -195,6 +194,17 @@ public class Board {
         }
 
         return new byte[]{healthyCells, sickCells};
+    }
+
+    public boolean isBoardDead(){
+        for(int row = 0; row < rows; row++){
+            for(int col = 0; col < cols; col++){
+                if(!this.cellBoard[row][col].isDead()){
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
@@ -232,9 +242,13 @@ public class Board {
         String resultString = "";
         for(int i = 0; i < rows; i++){
             for (int j = 0; j < cols; j++){
-                resultString += cellBoard[i][j].toString() + " ";
+                resultString += cellBoard[i][j].toString();
+                if(j != cols - 1){
+                    resultString += " ";
+                }
             }
-            resultString += "\n";
+            if(i != rows-1)
+                resultString += "\n";
         }
         return resultString;
     }

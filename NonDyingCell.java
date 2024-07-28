@@ -42,7 +42,7 @@ public class NonDyingCell extends Cell {
                 return new DyingCell(false);
 
         }
-        return null; //TODO this is an impossible edge case. Explain it.
+        return new NonDyingCell(false);
     }
 
     @Override

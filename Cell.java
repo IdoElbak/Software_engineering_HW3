@@ -50,11 +50,18 @@ abstract public class Cell {
         return this.getCellType() == STATE_HEALTHY;
     }
 
+    /**Checks whether a cell is sick.<br>
+     * A sick cell is a cell of the {@link NonDyingCell} class with fulfills {@link #stateBad} = true.
+     * @return true if the cell is sick, otherwise false.*/
+    public boolean isSick(){
+        return this.getCellType() == STATE_SICK;
+    }
+
     /**Checks whether a cell is dead.<br>
      * A dead cell is a cell of the {@link DyingCell} class with fulfills {@link #stateBad} = true.
      * @return true if the cell is dead, otherwise false.*/
-    public boolean isSick(){
-        return this.getCellType() == STATE_SICK;
+    public boolean isDead(){
+        return this.getCellType() == STATE_DEAD;
     }
 
     public byte getCellType(){
