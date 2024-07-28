@@ -7,7 +7,6 @@
  *  Moreover, certain types of cells have similar criteria, allowing them to be organized under one
  *  child class. Specifically, Healthy and sick cells have similar criteria,
  *  as well as dying and dead cells.</>
- *
  * */
 abstract public class Cell {
 
@@ -49,23 +48,19 @@ abstract public class Cell {
      * @return true if the cell is healthy, otherwise false.*/
     public boolean isHealthy(){
         return this.getCellType() == STATE_HEALTHY;
-
     }
 
     /**Checks whether a cell is dead.<br>
      * A dead cell is a cell of the {@link DyingCell} class with fulfills {@link #stateBad} = true.
      * @return true if the cell is dead, otherwise false.*/
-    public boolean isDead(){
-        return this.getCellType() == STATE_DEAD;
+    public boolean isSick(){
+        return this.getCellType() == STATE_SICK;
     }
 
     public byte getCellType(){
-
         if(this instanceof NonDyingCell)
             return this.stateBad ? STATE_SICK : STATE_HEALTHY;
 
         return this.stateBad ? STATE_DEAD : STATE_DYING;
-
     }
-
 }

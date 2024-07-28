@@ -2,24 +2,22 @@ import java.util.Random;
 
 /**
  * Describes a board containing cells of type {@link Cell}.
- *
  * */
 public class Board {
 
     /**
      * Number of rows in the board
      * */
-    private int rows;
+    private final int rows;
 
     /**
      * Number of columns in the board
      * */
-    private int cols;
+    private final int cols;
 
     /**
      * Board which occupies cells.
      * The board is initialized with dimensions ({@link #rows}, {@link #cols})
-     *
      * */
     private Cell[][] cellBoard;
 
@@ -30,17 +28,14 @@ public class Board {
         this.cols = cols;
         this.cellBoard = new Cell[rows][cols];
 
-
         //Randomly generates the board's cells.
         Random rand = new Random(seed);
         for (int row = 0; row < rows; row++) {
             for (int col = 0; col < cols; col++) {
-
                 int randValue = rand.nextInt(range);
                 Cell cellNew;
                 if(randValue % 2 == 0)
-                    cellNew = new NonDyingCell(true);
-
+                    cellNew = new DyingCell(true);
                 else
                     cellNew = new NonDyingCell(false);
 
@@ -49,26 +44,49 @@ public class Board {
         }
 
     }
-    public Board(Cell[][] cellBoard) {
+
+    public Board(Cell[][] cellBoard){
+        this.rows = cellBoard.length;
+        this.cols = cellBoard[0].length;
+        this.cellBoard = new Cell[rows][cols];
+
+        for(int row = 0; row < rows; row++){
+            for(int col = 0; col < cols; col++){
+                if(cellBoard[row][col] instanceof DyingCell){
+                    /*
+                    cellBoard in spot row,col will be a new DyingCell because it is instance of it
+                    getCellType will return 2 if the cell is Dying(stateBad = 0) and 3 if it's dead(stateBad = 1).
+                    so if the returned value == 3 it means stateBad should equal true. else it should equal false
+                     */
+                    this.cellBoard[row][col] = new DyingCell(cellBoard[row][col].getCellType() == 3);
+                }else if(cellBoard[row][col] instanceof NonDyingCell){
+                    /*
+                    cellBoard in spot row,col will be a new NonDyingCell because it is instance of it
+                    getCellType will return 0 if the cell is Healthy(stateBad = 0) and 1 if it's sick(stateBad = 1).
+                    so if the returned value == 1 it means stateBad should equal true. else it should equal false
+                     */
+                    this.cellBoard[row][col] = new NonDyingCell(cellBoard[row][col].getCellType() == 1);
+                }
+            }
+        }
     }
 
     public void nextGeneration(){
-
-        Cell[][] tempBoard = new Cell[rows][cols]; //TODO: Make clone
+        Board tempBoard = new Board(this.cellBoard);
         for(int row = 0; row < rows; row++){
             for(int col = 0; col < cols; col++){
 
-                byte[] healthyAndDeadCells = countHealthyAndDeadCells(row, col);
-                tempBoard[row][col] = cellBoard[row][col].nextGeneration(
-                        healthyAndDeadCells[0], healthyAndDeadCells[1]);
+                byte[] healthyAndSickCells = countHealthyAndSickCells(row, col);
+                tempBoard.cellBoard[row][col] = cellBoard[row][col].nextGeneration(
+                        healthyAndSickCells[0], healthyAndSickCells[1]);
             }
         }
-        this.cellBoard = tempBoard;
+        this.cellBoard = tempBoard.cellBoard;
 
     }
 
     /**
-     * Counts the healthy cells and dead cells among the neighboring cells of
+     * Counts the healthy cells and sick cells among the neighboring cells of
      * the cell at a given row and column.
      *
      * @param row The given row.
@@ -86,18 +104,18 @@ public class Board {
      * <br>6. The cell in indexes (row + 1, col)
      * <br>7. The cell in indexes (row + 1, col + 1)
      * <br>8. The cell in indexes (row, col + 1)
-     * <br>In each neighboring cell, we will check whether it is dead, alive or neither, and act accordingly.
+     * <br>In each neighboring cell, we will check whether it is sick, alive or neither, and act accordingly.
      * <br><br>
      * We will also check if the indexes of the neighboring cells are valid before checking them,
      * in order to avoid an {@link IndexOutOfBoundsException}.
      * */
-    private byte[] countHealthyAndDeadCells(int row, int col){
+    private byte[] countHealthyAndSickCells(int row, int col){
 
         //Stores the number of healthy cells.
         byte healthyCells = 0;
 
         //Stores the number of dead cells.
-        byte deadCells = 0;
+        byte sickCells = 0;
 
         if(row > 0){
 
@@ -106,24 +124,24 @@ public class Board {
                 if(cellBoard[row - 1][col - 1].isHealthy())
                     healthyCells++;
 
-                else if(cellBoard[row - 1][col - 1].isDead())
-                    deadCells++;
+                else if(cellBoard[row - 1][col - 1].isSick())
+                    sickCells++;
             }
 
             //Check 2:
             if(cellBoard[row - 1][col].isHealthy())
                 healthyCells++;
 
-            else if(cellBoard[row - 1][col].isDead())
-                deadCells++;
+            else if(cellBoard[row - 1][col].isSick())
+                sickCells++;
 
             //Check 3:
             if(col < cols - 1){
                 if(cellBoard[row - 1][col + 1].isHealthy())
                     healthyCells++;
 
-                else if(cellBoard[row - 1][col + 1].isDead())
-                    deadCells++;
+                else if(cellBoard[row - 1][col + 1].isSick())
+                    sickCells++;
             }
         }
 
@@ -133,7 +151,7 @@ public class Board {
             if(cellBoard[row][col - 1].isHealthy())
                 healthyCells++;
 
-            else if(cellBoard[row][col - 1].isDead())
+            else if(cellBoard[row][col - 1].isSick())
 
             //Check 5:
             if(row < rows - 1){
@@ -141,8 +159,8 @@ public class Board {
                     healthyCells++;
             }
 
-            else if(cellBoard[row + 1][col - 1].isDead())
-                deadCells++;
+            else if(cellBoard[row + 1][col - 1].isSick())
+                sickCells++;
 
         }
 
@@ -152,16 +170,16 @@ public class Board {
             if(cellBoard[row + 1][col].isHealthy())
                 healthyCells++;
 
-            else if(cellBoard[row + 1][col].isDead())
-                deadCells++;
+            else if(cellBoard[row + 1][col].isSick())
+                sickCells++;
 
             //Check 7:
             if(col < cols - 1){
                 if(cellBoard[row + 1][col + 1].isHealthy())
                     healthyCells++;
 
-                else if(cellBoard[row + 1][col + 1].isDead())
-                    deadCells++;
+                else if(cellBoard[row + 1][col + 1].isSick())
+                    sickCells++;
             }
         }
 
@@ -171,52 +189,53 @@ public class Board {
             if(cellBoard[row][col + 1].isHealthy())
                 healthyCells++;
 
-            else if(cellBoard[row][col + 1].isDead())
-                deadCells++;
+            else if(cellBoard[row][col + 1].isSick())
+                sickCells++;
 
         }
 
-        return new byte[]{healthyCells, deadCells};
-
+        return new byte[]{healthyCells, sickCells};
     }
 
     @Override
     public boolean equals(Object obj) {
-
-        if(!(obj instanceof Board boardObj))
+        if(!(obj instanceof Board))
             return false;
 
+        Board boardObj = (Board)obj;
         for (int i = 0; i < this.rows; i++) {
             for (int j = 0; j < this.cols; j++) {
                 if(!this.cellBoard[i][j].equals(boardObj.cellBoard[i][j]))
                     return false;
             }
         }
-
         return true;
     }
 
     /**
      * Generates a hash code for the given board.
      * The generating algorithm is as such:
-     *
-     *
      * */
     @Override
     public int hashCode() {
         String hashString = rows + "_" + cols + "_";
         for(int i = 0; i < rows; i++){
-
             for (int j = 0; j < cols; j++){
                 hashString += cellBoard[i][j].getCellType();
             }
-
         }
         return hashString.hashCode();
     }
 
     @Override
     public String toString() {
-        return super.toString();
+        String resultString = "";
+        for(int i = 0; i < rows; i++){
+            for (int j = 0; j < cols; j++){
+                resultString += cellBoard[i][j].toString() + " ";
+            }
+            resultString += "\n";
+        }
+        return resultString;
     }
 }

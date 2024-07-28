@@ -19,7 +19,6 @@ public class NonDyingCell extends Cell {
         * Therefore, we check this condition for the general case.
         * */
         if(healthyCells < 2 || healthyCells > 3){
-
             //If the cell is sick, it should become a dying cell.
             if(this.stateBad){
                 //Return a dying cell according to its definition in the DyingCell class.
@@ -34,7 +33,7 @@ public class NonDyingCell extends Cell {
         //We now know that 2<= healthyCells <= 3
         else{
 
-            //A healthy cell will become a sick cell if it has more than 2 neighboring sick cells.
+            //A healthy cell will become a sick cell if it has more than 3 neighboring sick cells.
             if(!this.stateBad && sickCells > 3)
                 return new NonDyingCell(true);
 
@@ -43,8 +42,14 @@ public class NonDyingCell extends Cell {
                 return new DyingCell(false);
 
         }
-
         return null; //TODO this is an impossible edge case. Explain it.
+    }
 
+    @Override
+    public String toString() {
+        if(stateBad){
+            return "S";
+        }
+        return "H";
     }
 }
