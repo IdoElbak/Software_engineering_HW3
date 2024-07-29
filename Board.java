@@ -45,7 +45,7 @@ public class Board {
 
     }
 
-    public Board(Board board){
+    public Board(Board board){ // a copy constructor
         this.rows = board.cellBoard.length;
         this.cols = board.cellBoard[0].length;
         this.cellBoard = new Cell[rows][cols];
@@ -71,6 +71,12 @@ public class Board {
         }
     }
 
+    /**
+     * this function calculates the board's next generation by doing as follows:
+     * creates a temporary board as a copy of the instance's one.
+     * changes the temporary board according to the demands of the game
+     * and then changes the instance's board to the temporary one
+     */
     public void nextGeneration(){
         Board tempBoard = new Board(this);
         for(int row = 0; row < rows; row++){
